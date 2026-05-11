@@ -143,6 +143,7 @@ main{padding:0}
   max-height:calc(90vh - 64px);
   width:auto;height:auto;
   object-fit:contain;
+  transition:opacity .25s;
 }
 
 #popup-body{
@@ -291,8 +292,10 @@ function openP(p) {
     ${p.price ? `<div class="p-price p-spec"><label>Prezzo</label><span>${p.price}</span></div>` : ''}`;
 
   const bg = document.getElementById('popup-img-bg');
+  bg.style.opacity = '0';
   bg.src = photos[p.id] || '';
-
+  bg.onload = () => { bg.style.opacity = '1'; };
+  if (!photos[p.id]) bg.style.opacity = '1';
   ov.classList.add('open');
   document.body.style.overflow = 'hidden';
 }

@@ -88,7 +88,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:500;padding:28px 52px;display:fl
 #popup{background:#1a1612;border:1px solid rgba(201,169,110,.12);max-width:900px;width:92%;display:flex;flex-direction:row;max-height:86vh;overflow:hidden;transform:translateY(28px);transition:transform .45s cubic-bezier(.25,.46,.45,.94);position:relative}
 #popup-ov.open #popup{transform:translateY(0)}
 #popup-img-wrap{flex:0 0 auto;max-width:55%;max-height:86vh;background:#111;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:28px}
-#popup-img-wrap img{display:block;max-width:100%;max-height:calc(86vh - 56px);width:auto;height:auto;object-fit:contain}
+#popup-img-wrap img{display:block;max-width:100%;max-height:calc(86vh - 56px);width:auto;height:auto;object-fit:contain;transition:opacity .25s}
 #popup-body{padding:44px 38px;display:flex;flex-direction:column;justify-content:space-between;overflow-y:auto}
 .p-num{font-family:var(--mono);font-size:8px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px}
 .p-title{font-family:var(--serif);font-size:28px;font-weight:300;font-style:italic;color:#fff;line-height:1.1;margin-bottom:6px}
@@ -566,7 +566,11 @@ function openP(p) {
     <div class="p-spec"><label>Dimensioni</label><span>${p.size}</span></div>
     <div class="p-spec"><label>Tecnica</label><span>${p.technique}</span></div>
     ${p.price ? `<div class="p-price p-spec"><label>Prezzo</label><span>${p.price}</span></div>` : ''}`;
-  document.getElementById('popup-img-bg').src = photos[p.id] || '';
+  const img = document.getElementById('popup-img-bg');
+  img.style.opacity = '0';
+  img.src = photos[p.id] || '';
+  img.onload = () => { img.style.opacity = '1'; };
+  if (!photos[p.id]) img.style.opacity = '1';
   ov.classList.add('open');
 }
 
