@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opere — Manuel Cilli</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --cream:#f5f0e8;
+  --dark:#12100e;
+  --gold:#c9a96e;
+  --serif:'Cormorant Garamond',serif;
+  --mono:'Space Mono',monospace;
+}
+html{background:#fff;font-size:16px}
+body{background:#fff;color:var(--dark);overflow-x:hidden}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:64px;padding:0 48px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:#fff;
+  border-bottom:1px solid #e8e4de;
+}
+.nav-logo{
+  font-family:var(--serif);font-size:16px;font-weight:400;
+  letter-spacing:6px;text-transform:uppercase;color:var(--dark);
+  text-decoration:none;
+}
+.nav-right{display:flex;align-items:center;gap:40px}
+.nav-back{
+  font-family:var(--mono);font-size:8px;letter-spacing:3px;
+  text-transform:uppercase;color:#999;text-decoration:none;
+  transition:color .25s;
+}
+.nav-back:hover{color:var(--dark)}
+.nav-count{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:#bbb}
+
+/* HEADER */
+header{
+  padding:120px 48px 64px;
+  border-bottom:1px solid #e8e4de;
+}
+.h-label{
+  font-family:var(--mono);font-size:8px;letter-spacing:4px;
+  text-transform:uppercase;color:var(--gold);margin-bottom:20px;
+}
+.h-title{
+  font-family:var(--serif);font-size:clamp(48px,6vw,96px);
+  font-weight:300;font-style:italic;line-height:.92;color:var(--dark);
+}
+.h-title strong{font-style:normal;font-weight:600}
+
+/* GRID */
+main{padding:0}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  border-left:1px solid #e8e4de;
+}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.grid{grid-template-columns:1fr}}
+
+/* CARD */
+.card{
+  border-right:1px solid #e8e4de;
+  border-bottom:1px solid #e8e4de;
+  cursor:pointer;
+  transition:background .2s;
+  background:#fff;
+}
+.card:hover{background:#faf9f7}
+
+.card-thumb{
+  height:280px;
+  overflow:hidden;
+  background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+.card-img{
+  max-width:100%;max-height:100%;
+  object-fit:contain;
+  transition:transform .6s cubic-bezier(.25,.46,.45,.94);
+  display:block;
+}
+.card:hover .card-img{transform:scale(1.03)}
+
+.card-body{padding:24px 28px 28px}
+.card-num{
+  font-family:var(--mono);font-size:7px;letter-spacing:2px;
+  text-transform:uppercase;color:#bbb;margin-bottom:12px;
+}
+.card-title{
+  font-family:var(--serif);font-size:22px;font-weight:300;
+  font-style:italic;color:var(--dark);line-height:1.15;
+  margin-bottom:6px;
+}
+.card-meta{
+  font-family:var(--mono);font-size:7px;letter-spacing:2px;
+  text-transform:uppercase;color:#999;
+}
+
+/* POPUP */
+#popup-ov{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(255,255,255,.92);
+  backdrop-filter:blur(20px);
+  opacity:0;pointer-events:none;
+  transition:opacity .35s;
+  display:flex;align-items:center;justify-content:center;
+}
+#popup-ov.open{opacity:1;pointer-events:all}
+#popup{
+  background:#fff;
+  border:1px solid #e8e4de;
+  width:92%;
+  max-width:960px;
+  max-height:90vh;
+  display:flex;
+  flex-direction:row;
+  overflow:hidden;
+  transform:translateY(20px);
+  transition:transform .35s cubic-bezier(.25,.46,.45,.94);
+  box-shadow:0 8px 64px rgba(0,0,0,.08);
+}
+#popup-ov.open #popup{transform:translateY(0)}
+
+#popup-img-wrap{
+  flex:0 0 auto;
+  background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  padding:32px;
+  max-width:60%;
+  max-height:90vh;
+}
+#popup-img-bg{
+  display:block;
+  max-width:100%;
+  max-height:calc(90vh - 64px);
+  width:auto;height:auto;
+  object-fit:contain;
+}
+
+#popup-body{
+  flex:1 1 auto;
+  min-width:240px;
+  padding:48px 40px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  overflow-y:auto;background:#fff;
+  border-left:1px solid #e8e4de;
+}
+.p-num{font-family:var(--mono);font-size:7px;color:#bbb;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px}
+.p-title{font-family:var(--serif);font-size:30px;font-weight:300;font-style:italic;color:var(--dark);line-height:1.1;margin-bottom:6px}
+.p-artist{font-family:var(--mono);font-size:8px;color:#999;letter-spacing:2px;margin-bottom:24px}
+.p-desc{font-family:var(--serif);font-size:15px;line-height:1.8;color:#555;font-weight:300;margin-bottom:28px}
+.p-specs{border-top:1px solid #e8e4de;padding-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.p-spec label{font-family:var(--mono);font-size:7px;color:#bbb;letter-spacing:2px;text-transform:uppercase;display:block;margin-bottom:4px}
+.p-spec span{font-family:var(--serif);font-size:14px;color:var(--dark)}
+.p-price{grid-column:span 2;padding-top:16px;border-top:1px solid #e8e4de}
+.p-price span{font-family:var(--serif);font-size:22px;color:var(--gold);font-style:italic}
+
+#popup-close{
+  position:absolute;top:20px;right:20px;
+  width:36px;height:36px;
+  border:1px solid #e8e4de;background:#fff;
+  color:#999;font-size:13px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color .2s,color .2s;
+  font-family:var(--mono);
+}
+#popup-close:hover{border-color:var(--dark);color:var(--dark)}
+
+@media(max-width:640px){
+  nav{padding:0 24px}
+  header{padding:96px 24px 48px}
+  .grid{grid-template-columns:1fr 1fr;border-left:none}
+  .card-thumb{height:180px;padding:12px}
+  .card-body{padding:16px 18px 20px}
+  .card-title{font-size:17px}
+  #popup{flex-direction:column;max-height:92vh;width:96%}
+  #popup-img-wrap{max-width:100%;padding:20px;max-height:50vh}
+  #popup-img-bg{max-height:calc(50vh - 40px)}
+  #popup-body{border-left:none;border-top:1px solid #e8e4de;padding:28px 24px}
+  .p-title{font-size:24px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="gallery-wall-v12.html">Manuel Cilli</a>
+  <div class="nav-right">
+    <a class="nav-back" href="gallery-wall-v12.html">← Galleria</a>
+  </div>
+</nav>
+
+<header>
+  <div class="h-label">Catalogo — 2024 · 2026</div>
+  <div class="h-title">Tutte<br><strong>le opere</strong></div>
+</header>
+
+<main>
+  <div class="grid" id="grid"></div>
+</main>
+
+<div id="popup-ov" onclick="closeP(event)">
+  <div id="popup">
+    <div id="popup-img-wrap"><img id="popup-img-bg" src="" alt=""></div>
+    <div id="popup-body">
+      <div>
+        <div class="p-num" id="p-num"></div>
+        <div class="p-title" id="p-title"></div>
+        <div class="p-artist" id="p-artist"></div>
+        <div class="p-desc" id="p-desc"></div>
+      </div>
+      <div class="p-specs" id="p-specs"></div>
+    </div>
+    <button id="popup-close" onclick="closeP(null)">✕</button>
+  </div>
+</div>
+
+<script>
+const paintings = [{"id":1,"cx":17.7,"cy":31.7,"cw":8,"ch":12,"title":"Limbo","year":"2024","technique":"Olio su tela","size":"80×60 cm","desc":"Androne di palazzo con colonne, archi e scalini. Luce che entra laterale. Spazio di passaggio tra il costruito e l'inaccessibile.","category":"paesaggio architettonico"},{"id":2,"cx":28.9,"cy":35.3,"cw":11,"ch":19,"title":"Senza titolo (Miraggio)","year":"2025","technique":"Olio su lino","size":"50×40 cm","desc":"Interno architettonico con colonne e vetrate che filtrano una luce dorata. Spazio irreale, sospeso tra memoria e visione.","category":"paesaggio architettonico"},{"id":3,"cx":38.1,"cy":28.8,"cw":5,"ch":7,"title":"Notte a Venezia","year":"2024","technique":"Olio su tela","size":"35×28 cm","desc":"Colonna e base di pietra nella penombra. La materia architettonica veneziana diventa soggetto assoluto, senza figura.","category":"paesaggio architettonico"},{"id":4,"cx":48.5,"cy":29.3,"cw":5,"ch":8,"title":"Soylent night","year":"2024","technique":"Olio su tela","size":"50×50 cm","desc":"Tetti romani di notte con torrette e comignoli su cielo blu scuro. Architettura popolare trasfigurata in paesaggio lunare.","category":"paesaggio architettonico"},{"id":5,"cx":57.1,"cy":30.8,"cw":8,"ch":12,"title":"Codice S","year":"2025","technique":"Olio su lino","size":"50×40 cm","desc":"Una sedia in penombra su fondo caldo. L'assenza di chi vi siede è il vero soggetto del dipinto.","category":"natura morta"},{"id":6,"cx":66.4,"cy":30.9,"cw":8,"ch":12,"title":"Il mito","year":"2025","technique":"Olio su lino","size":"50×40 cm","desc":"Battiporta in bronzo di un palazzo romano. L'oggetto comune diventa presenza mitologica, guardiano silenzioso di soglie inaccessibili.","category":"natura morta"},{"id":7,"cx":73.9,"cy":33.6,"cw":6,"ch":8,"title":"Autoritratto","year":"2026","technique":"Olio su lino","size":"30×30 cm","desc":"Ritratto in berretto verde su fondo ocra. Lo sguardo si sottrae, sospeso tra concentrazione e assenza.","category":"ritratto"},{"id":8,"cx":84.2,"cy":31.9,"cw":9,"ch":11,"title":"Senza titolo","year":"2025","technique":"Olio su tela","size":"30×25 cm","desc":"Scorcio di portone con battiporta. Luce radente su muro nudo. Il confine tra interno e esterno come tema della pittura.","category":"paesaggio architettonico"},{"id":9,"cx":80.6,"cy":46.8,"cw":13,"ch":15,"title":"Senza titolo","year":"2024","technique":"Olio su tela","size":"70×60 cm","desc":"Due scarpe consumate con un chiodo. Oggetti testimoni della quotidianità, disposti con la cura di una natura morta fiamminga.","category":"natura morta"},{"id":10,"cx":67.7,"cy":43.2,"cw":8,"ch":8,"title":"Il guardiano","year":"2025","technique":"Olio su tela","size":"35×25 cm","desc":"Portone di palazzo visto di scorcio. Il battiporta leonino e il riflesso dorato evocano una presenza invisibile.","category":"paesaggio architettonico"},{"id":11,"cx":57.7,"cy":45.8,"cw":10,"ch":12,"title":"Non ancora","year":"2024","technique":"Olio su tela","size":"50×50 cm","desc":"Due scarpe consumate con un chiodo. Oggetti testimoni della quotidianità, disposti con la cura di una natura morta fiamminga.","category":"natura morta"},{"id":12,"cx":43.4,"cy":45.3,"cw":16,"ch":20,"title":"Eremo","year":"2024","technique":"Olio su tela","size":"80×80 cm","desc":"Tavolo da lavoro dell'atelier visto dall'alto. Caos fertile di colori, tele, barattoli, un bicchiere di vino. La pittura come pratica e come vita.","category":"natura morta"}];
+
+const extras = [
+  {id:13,title:"Ritratto di Celeste De Santis",year:"2025",technique:"Olio su tela",size:"60×50 cm",desc:"Ritratto maschile con sguardo diretto e composto. La luce modella il volto con discrezione e precisione.",category:"ritratto"},
+  {id:14,title:"Tre mandarini",year:"2024",technique:"Olio su tela",size:"Ø 23 cm",desc:"Tre mandarini su fondo nero in formato circolare. La luce calda emerge dal buio con una qualità quasi caravaggesca.",category:"natura morta"}
+];
+
+const allWorks = [...paintings, ...extras];
+
+
+const photos = {
+  1:  'FOTO FINALI/Limbo.webp',
+  2:  'FOTO FINALI/Senza titolo (miraggio=.webp',
+  3:  'FOTO FINALI/Notte a Venezia.webp',
+  4:  'FOTO FINALI/Soylent Night.webp',
+  5:  'FOTO FINALI/Codice S.webp',
+  6:  'FOTO FINALI/Il Mito.webp',
+  7:  'FOTO FINALI/Autoritratto.webp',
+  8:  'FOTO FINALI/Senza titolo .webp',
+  9:  'FOTO FINALI/Senza titolo olio.webp',
+  10: 'FOTO FINALI/Il guardiano.webp',
+  11: 'FOTO FINALI/Non Ancora.webp',
+  12: 'FOTO FINALI/eremo.webp',
+  13: 'FOTO FINALI/Ritratto di Celeste De Santis.webp',
+  14: 'FOTO FINALI/Tre Mandarini .webp',
+};
+
+function cropStyle(work) {
+  const src = photos[work.id];
+  if (src) return { backgroundImage: `url('${src}')`, backgroundSize: 'cover', backgroundPosition: 'center' };
+  return { backgroundImage: 'linear-gradient(135deg,#e8e4de,#d4cfc6)', backgroundSize: '100%', backgroundPosition: 'center' };
+}
+
+const grid = document.getElementById('grid');
+
+allWorks.forEach(work => {
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const src = photos[work.id] || '';
+  card.innerHTML = `
+    <div class="card-thumb">
+      <img class="card-img" src="${src}" alt="${work.title}" loading="lazy">
+    </div>
+    <div class="card-body">
+      <div class="card-num">${String(work.id).padStart(2,'0')} — ${work.category}</div>
+      <div class="card-title">${work.title}</div>
+      <div class="card-meta">${work.year} &nbsp;·&nbsp; ${work.size} &nbsp;·&nbsp; ${work.technique}</div>
+    </div>`;
+
+  card.addEventListener('click', () => openP(work));
+  grid.appendChild(card);
+});
+
+const ov = document.getElementById('popup-ov');
+
+function openP(p) {
+  document.getElementById('p-num').textContent    = String(p.id).padStart(2,'0') + ' / ' + p.technique;
+  document.getElementById('p-title').textContent  = p.title;
+  document.getElementById('p-artist').textContent = 'Manuel Cilli — ' + p.year;
+  document.getElementById('p-desc').textContent   = p.desc;
+  document.getElementById('p-specs').innerHTML = `
+    <div class="p-spec"><label>Dimensioni</label><span>${p.size}</span></div>
+    <div class="p-spec"><label>Tecnica</label><span>${p.technique}</span></div>
+    ${p.price ? `<div class="p-price p-spec"><label>Prezzo</label><span>${p.price}</span></div>` : ''}`;
+
+  const bg = document.getElementById('popup-img-bg');
+  bg.src = photos[p.id] || '';
+
+  ov.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeP(e) {
+  if (e && e.target !== ov) return;
+  ov.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { ov.classList.remove('open'); document.body.style.overflow = ''; } });
+</script>
+</body>
+</html>

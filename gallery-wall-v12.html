@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manuel Cilli — Atelier</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--cream:#f5f0e8;--dark:#12100e;--gold:#c9a96e;--serif:'Cormorant Garamond',serif;--mono:'Space Mono',monospace;}
+html{background:#000;cursor:none;height:100%}
+body{background:#000;overflow-x:hidden;cursor:none;height:100%}
+
+/* CURSOR */
+#cur{position:fixed;width:6px;height:6px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .25s,height .25s}
+#cur-ring{position:fixed;width:30px;height:30px;border:1px solid rgba(201,169,110,.35);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .25s,height .25s}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:500;padding:28px 52px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(0,0,0,.65) 0%,transparent 100%);pointer-events:none}
+.nav-logo{font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:8px;text-transform:uppercase;color:#fff;text-shadow:0 1px 12px rgba(0,0,0,.8)}
+.nav-sub{font-family:var(--mono);font-size:11px;color:rgba(201,169,110,.8);letter-spacing:2px;text-transform:uppercase;text-shadow:0 1px 8px rgba(0,0,0,.8)}
+
+/* SCROLL CONTAINER */
+#gallery-scroll{height:1400vh;position:relative;background:#000}
+
+/* STICKY STAGE */
+#stage{position:sticky;top:0;height:100vh;width:100vw;overflow:hidden;background:#000}
+
+/* L'immagine — NIENTE object-fit:cover, la gestiamo noi */
+#wall-img{
+  position:absolute;
+  display:block;
+  /* dimensioni e posizione calcolate da JS */
+  transform-origin:0 0;
+  will-change:transform;
+  pointer-events:none;
+}
+
+/* Vignette */
+#vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,.55) 100%);pointer-events:none;z-index:2}
+
+/* INTRO */
+#intro{position:absolute;bottom:72px;left:52px;z-index:20;pointer-events:none;transition:opacity .6s}
+.intro-label{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:4px;text-transform:uppercase;margin-bottom:18px}
+.intro-title{font-family:var(--serif);font-size:clamp(56px,7vw,110px);font-weight:300;line-height:.92;color:#fff;font-style:italic}
+.intro-title strong{font-style:normal;font-weight:600}
+.intro-scroll{margin-top:32px;font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.85);letter-spacing:3px;display:flex;align-items:center;gap:12px}
+.sl{width:36px;height:1px;background:var(--gold);animation:sl 2s ease-in-out infinite}
+@keyframes sl{0%,100%{width:36px}50%{width:64px;opacity:.3}}
+
+/* ZOOM LABEL */
+#zoom-label{position:absolute;top:36px;left:50%;transform:translateX(-50%);z-index:20;font-family:var(--serif);font-size:15px;font-style:italic;color:rgba(201,169,110,.8);letter-spacing:2px;opacity:0;transition:opacity .5s;white-space:nowrap;text-shadow:0 1px 8px rgba(0,0,0,.9)}
+
+/* PROGRESS */
+#progress{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);z-index:20;display:flex;gap:7px}
+.pd{width:4px;height:4px;border-radius:50%;background:rgba(201,169,110,.2);transition:background .4s,transform .4s}
+.pd.on{background:var(--gold);transform:scale(1.5)}
+
+/* HOTSPOTS — posizionati in px da JS */
+.hs{
+  position:absolute;
+  z-index:15;
+  cursor:none;
+  pointer-events:all;
+  transform:translate(-50%,-50%);
+  transition:opacity .4s;
+}
+.hs-box{position:absolute;inset:-8px;border:1px solid rgba(201,169,110,0);transition:border-color .3s,box-shadow .3s}
+.hs:hover .hs-box,.hs.on .hs-box{border-color:rgba(201,169,110,.5);box-shadow:0 0 24px rgba(201,169,110,.1),inset 0 0 24px rgba(201,169,110,.04)}
+.hs-c{position:absolute;width:10px;height:10px;border-color:var(--gold);border-style:solid;transition:opacity .3s,width .3s,height .3s}
+.hs-c.tl{top:-1px;left:-1px;border-width:1.5px 0 0 1.5px}
+.hs-c.tr{top:-1px;right:-1px;border-width:1.5px 1.5px 0 0}
+.hs-c.bl{bottom:-1px;left:-1px;border-width:0 0 1.5px 1.5px}
+.hs-c.br{bottom:-1px;right:-1px;border-width:0 1.5px 1.5px 0}
+.hs:hover .hs-c,.hs.on .hs-c{width:14px;height:14px}
+.hs-dot{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:8px;height:8px;background:var(--gold);border-radius:50%;transition:box-shadow .3s}
+.hs:hover .hs-dot,.hs.on .hs-dot{box-shadow:0 0 16px var(--gold);animation:gd 2s ease-in-out infinite}
+@keyframes gd{0%,100%{box-shadow:0 0 8px var(--gold)}50%{box-shadow:0 0 20px var(--gold)}}
+.hs-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:30px;height:30px;border:1px solid rgba(201,169,110,0);border-radius:50%}
+.hs:hover .hs-ring,.hs.on .hs-ring{border-color:rgba(201,169,110,.4);animation:hr 1.8s ease-out infinite}
+@keyframes hr{0%{width:30px;height:30px;opacity:.6}100%{width:54px;height:54px;opacity:0}}
+.hs-label{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);white-space:nowrap;font-family:var(--mono);font-size:8px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;background:rgba(8,6,4,.9);border:1px solid rgba(201,169,110,.2);padding:5px 10px;opacity:0;transition:opacity .3s;pointer-events:none}
+.hs:hover .hs-label{opacity:1}
+
+/* POPUP */
+#popup-ov{position:fixed;inset:0;z-index:1000;background:rgba(8,6,4,.88);backdrop-filter:blur(16px);opacity:0;pointer-events:none;transition:opacity .45s;display:flex;align-items:center;justify-content:center}
+#popup-ov.open{opacity:1;pointer-events:all}
+#popup{background:#1a1612;border:1px solid rgba(201,169,110,.12);max-width:900px;width:92%;display:flex;flex-direction:row;max-height:86vh;overflow:hidden;transform:translateY(28px);transition:transform .45s cubic-bezier(.25,.46,.45,.94);position:relative}
+#popup-ov.open #popup{transform:translateY(0)}
+#popup-img-wrap{flex:0 0 auto;max-width:55%;max-height:86vh;background:#111;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:28px}
+#popup-img-wrap img{display:block;max-width:100%;max-height:calc(86vh - 56px);width:auto;height:auto;object-fit:contain}
+#popup-body{padding:44px 38px;display:flex;flex-direction:column;justify-content:space-between;overflow-y:auto}
+.p-num{font-family:var(--mono);font-size:8px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px}
+.p-title{font-family:var(--serif);font-size:28px;font-weight:300;font-style:italic;color:#fff;line-height:1.1;margin-bottom:6px}
+.p-artist{font-family:var(--mono);font-size:9px;color:rgba(201,169,110,.6);letter-spacing:2px;margin-bottom:22px}
+.p-desc{font-family:var(--serif);font-size:14px;line-height:1.75;color:rgba(245,240,232,.55);font-weight:300;margin-bottom:24px}
+.p-specs{border-top:1px solid rgba(201,169,110,.1);padding-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.p-spec label{font-family:var(--mono);font-size:7px;color:rgba(201,169,110,.45);letter-spacing:2px;text-transform:uppercase;display:block;margin-bottom:3px}
+.p-spec span{font-family:var(--serif);font-size:13px;color:var(--cream)}
+.p-price{grid-column:span 2;padding-top:14px;border-top:1px solid rgba(201,169,110,.08)}
+.p-price span{font-family:var(--serif);font-size:20px;color:var(--gold);font-style:italic}
+#popup-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border:1px solid rgba(201,169,110,.18);background:transparent;color:rgba(201,169,110,.5);font-size:14px;cursor:none;display:flex;align-items:center;justify-content:center;transition:border-color .3s,color .3s;font-family:var(--mono)}
+#popup-close:hover{border-color:var(--gold);color:var(--gold)}
+@media(max-width:600px){
+  #popup{flex-direction:column;max-height:92vh;width:96%}
+  #popup-img-wrap{flex:0 0 auto;max-width:100%;padding:20px;max-height:50vh;height:auto;min-height:unset}
+  #popup-img-wrap img{max-height:calc(50vh - 40px);width:auto;max-width:100%;object-fit:contain}
+  #popup-body{padding:24px 22px;overflow-y:auto}
+  .p-title{font-size:22px}
+  .p-desc{margin-bottom:16px}
+}
+#m-gallery{display:none}
+@media(max-width:768px){
+  html,body{cursor:auto}
+  #cur,#cur-ring,#gallery-scroll,#progress,#zoom-label{display:none}
+  nav .nav-sub{display:none}
+  #m-gallery{display:block;height:100dvh;overflow-y:scroll;scroll-snap-type:y mandatory;background:#000;-webkit-overflow-scrolling:touch}
+  .m-page{height:100dvh;scroll-snap-align:start;position:relative;overflow:hidden;background:#000}
+  .m-page-bg{position:absolute;inset:0;background-repeat:no-repeat}
+  .m-page-vignette{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,6,4,.88) 0%,transparent 65%)}
+  .m-page-meta{position:absolute;bottom:52px;left:28px;right:100px}
+  .m-page-num{font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:3px;margin-bottom:10px;text-transform:uppercase}
+  .m-page-title{font-family:var(--serif);font-size:28px;font-weight:300;font-style:italic;color:#fff;line-height:1.05;margin-bottom:6px}
+  .m-page-sub{font-family:var(--mono);font-size:8px;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase}
+  .m-page-cta{position:absolute;bottom:52px;right:24px;font-family:var(--mono);font-size:8px;color:var(--gold);letter-spacing:2px;border:1px solid rgba(201,169,110,.4);padding:10px 14px;cursor:pointer}
+  .m-intro-page{height:100dvh;scroll-snap-align:start;display:flex;flex-direction:column;justify-content:flex-end;padding:0 28px 64px;background:#000;position:relative;overflow:hidden}
+  .m-intro-page .m-page-bg{position:absolute;inset:0;background-repeat:no-repeat;filter:brightness(0.78)}
+  .m-intro-title{position:relative;font-family:var(--serif);font-size:64px;font-weight:300;font-style:italic;color:#fff;line-height:1.0;margin-bottom:12px}
+  .m-intro-sub{position:relative;font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:3px;margin-bottom:20px;text-transform:uppercase}
+  .m-intro-hint{position:relative;font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.55);letter-spacing:3px;display:flex;align-items:center;gap:10px;text-transform:uppercase}
+  .m-intro-hint .sl{display:inline-block;width:1px;height:18px;background:var(--gold);animation:pulse-line 1.4s ease-in-out infinite}
+  @keyframes pulse-line{0%,100%{opacity:.2}50%{opacity:1}}
+}
+
+
+/* NAV LINK */
+.nav-link{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.35);letter-spacing:3px;text-transform:uppercase;text-decoration:none;transition:color .3s;pointer-events:auto;cursor:none}
+.nav-link:hover{color:var(--gold)}
+.nav-bio-btn{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.35);letter-spacing:3px;text-transform:uppercase;background:none;border:none;cursor:none;pointer-events:auto;transition:color .3s;padding:0}
+.nav-bio-btn:hover{color:var(--gold)}
+
+/* BIO POPUP */
+#bio-ov{position:fixed;inset:0;z-index:1000;background:rgba(8,6,4,.88);backdrop-filter:blur(16px);opacity:0;pointer-events:none;transition:opacity .45s;display:flex;align-items:center;justify-content:center}
+#bio-ov.open{opacity:1;pointer-events:all}
+#bio-popup{background:#1a1612;border:1px solid rgba(201,169,110,.12);max-width:820px;width:92%;display:grid;grid-template-columns:1fr 1fr;max-height:82vh;overflow:hidden;transform:translateY(28px);transition:transform .45s cubic-bezier(.25,.46,.45,.94);position:relative}
+#bio-ov.open #bio-popup{transform:translateY(0)}
+#bio-img-wrap{background:#111;overflow:hidden;display:flex;align-items:center;justify-content:center}
+#bio-img{width:100%;height:100%;object-fit:cover;filter:brightness(.9);display:block}
+#bio-body{padding:44px 38px;display:flex;flex-direction:column;justify-content:space-between;overflow-y:auto}
+.bio-label{font-family:var(--mono);font-size:8px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px}
+.bio-name{font-family:var(--serif);font-size:28px;font-weight:300;font-style:italic;color:#fff;line-height:1.1;margin-bottom:6px}
+.bio-loc{font-family:var(--mono);font-size:9px;color:rgba(201,169,110,.6);letter-spacing:2px;margin-bottom:22px}
+.bio-text{font-family:var(--serif);font-size:14px;line-height:1.8;color:rgba(245,240,232,.55);font-weight:300;margin-bottom:24px}
+.bio-specs{border-top:1px solid rgba(201,169,110,.1);padding-top:18px;display:flex;flex-direction:column;gap:12px}
+.bio-spec label{font-family:var(--mono);font-size:7px;color:rgba(201,169,110,.45);letter-spacing:2px;text-transform:uppercase;display:block;margin-bottom:3px}
+.bio-spec span{font-family:var(--serif);font-size:13px;color:var(--cream)}
+#bio-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border:1px solid rgba(201,169,110,.18);background:transparent;color:rgba(201,169,110,.5);font-size:14px;cursor:none;display:flex;align-items:center;justify-content:center;transition:border-color .3s,color .3s;font-family:var(--mono)}
+#bio-close:hover{border-color:var(--gold);color:var(--gold)}
+@media(max-width:600px){
+  #bio-popup{grid-template-columns:1fr;grid-template-rows:auto 1fr;max-height:90vh;width:96%}
+  #bio-img-wrap{height:52vw;min-height:180px;max-height:260px}
+  #bio-body{padding:24px 22px;overflow-y:auto}
+  .bio-name{font-size:22px}
+}
+
+
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-ring"></div>
+
+<nav>
+  <div class="nav-logo">Manuel Cilli</div>
+  <div style="display:flex;gap:32px;align-items:center;pointer-events:auto">
+    <button class="nav-bio-btn" onclick="openBio()">Bio</button>
+    <a class="nav-link" href="work.html">Opere</a>
+  </div>
+</nav>
+
+<div id="m-gallery"></div>
+
+<section id="gallery-scroll">
+  <div id="stage">
+    <img id="wall-img" src="wall.webp" alt="Atelier Manuel Cilli">
+    <div id="vignette"></div>
+    <div id="intro">
+      <div class="intro-label">Atelier</div>
+      <div class="intro-title">Lo studio<br><strong>dell'artista</strong></div>
+      <div class="intro-scroll"><span class="sl"></span>Scorri per avvicinarti</div>
+    </div>
+    <div id="zoom-label"></div>
+    <div id="progress"></div>
+  </div>
+</section>
+
+
+<div id="bio-ov" onclick="closeBio(event)">
+  <div id="bio-popup">
+    <div id="bio-img-wrap"><img id="bio-img" src="" alt="Manuel Cilli"></div>
+    <div id="bio-body">
+      <div>
+        <div class="bio-label">Artista — Roma</div>
+        <div class="bio-name">Manuel Cilli</div>
+        <div class="bio-loc">Pescara, 1993 — Vive e lavora a Roma</div>
+        <div class="bio-text">Manuel Cilli cerca una pittura immobile e di atmosfera, che non aggiunge e non sottrae, ma isola e rappresenta. I soggetti seguono i generi pittorici della natura morta, del ritratto, del paesaggio architettonico e delle scene di vita quotidiana.</div>
+      </div>
+      <div class="bio-specs">
+        <div class="bio-spec"><label>Formazione</label><span>Accademia di Belle Arti di Venezia — Diploma II livello, Pittura (2020)<br>Accademia di Belle Arti di Urbino — Diploma I livello, Pittura (2017)</span></div>
+        <div class="bio-spec"><label>Mostre</label><span>"Gioco Piano" — Piazza Galeria 7, Roma (2025)</span></div>
+        <div class="bio-spec"><label>Contatti</label><span>manuel.cilli93@gmail.com</span></div>
+      </div>
+    </div>
+    <button id="bio-close" onclick="closeBio(null)">✕</button>
+  </div>
+</div>
+
+<div id="popup-ov" onclick="closeP(event)">
+  <div id="popup">
+    <div id="popup-img-wrap"><img id="popup-img-bg" src="" alt=""></div>
+    <div id="popup-body">
+      <div>
+        <div class="p-num" id="p-num"></div>
+        <div class="p-title" id="p-title"></div>
+        <div class="p-artist" id="p-artist"></div>
+        <div class="p-desc" id="p-desc"></div>
+      </div>
+      <div class="p-specs" id="p-specs"></div>
+    </div>
+    <button id="popup-close" onclick="closeP(null)">✕</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+const paintings = [{"id": 1, "cx": 17.7, "cy": 31.7, "cw": 8, "ch": 12, "title": "Senza titolo (Miraggio)", "titleEn": "Untitled (Mirage)", "year": "2025", "technique": "Olio su lino", "size": "50×40 cm", "desc": "Interno architettonico con colonne e vetrate che filtrano una luce dorata. Spazio irreale, sospeso tra memoria e visione.", "category": "paesaggio architettonico"}, {"id": 2, "cx": 28.9, "cy": 35.3, "cw": 11, "ch": 19, "title": "Limbo", "titleEn": "Limbo", "year": "2024", "technique": "Olio su tela", "size": "80×60 cm", "desc": "Androne di palazzo con colonne, archi e scalini. Luce che entra laterale. Spazio di passaggio tra il costruito e l'inaccessibile.", "category": "paesaggio architettonico"}, {"id": 3, "cx": 38.1, "cy": 28.8, "cw": 5, "ch": 7, "title": "Senza titolo", "titleEn": "Untitled", "year": "2025", "technique": "Olio su tela", "size": "30×25 cm", "desc": "Scorcio di portone con battiporta. Luce radente su muro nudo. Il confine tra interno e esterno come tema della pittura.", "category": "paesaggio architettonico"}, {"id": 4, "cx": 48.5, "cy": 29.3, "cw": 5, "ch": 8, "title": "Il guardiano", "titleEn": "The guardian", "year": "2025", "technique": "Olio su tela", "size": "35×25 cm", "desc": "Portone di palazzo visto di scorcio. Il battiporta leonino e il riflesso dorato evocano una presenza invisibile.", "category": "paesaggio architettonico"}, {"id": 5, "cx": 57.1, "cy": 30.8, "cw": 8, "ch": 12, "title": "Codice S", "titleEn": "Code S", "year": "2025", "technique": "Olio su lino", "size": "50×40 cm", "desc": "Una sedia in penombra su fondo caldo. L'assenza di chi vi siede è il vero soggetto del dipinto.", "category": "natura morta"}, {"id": 6, "cx": 66.4, "cy": 30.9, "cw": 8, "ch": 12, "title": "Il mito", "titleEn": "The myth", "year": "2025", "technique": "Olio su lino", "size": "50×40 cm", "desc": "Battiporta in bronzo di un palazzo romano. L'oggetto comune diventa presenza mitologica, guardiano silenzioso di soglie inaccessibili.", "category": "natura morta"}, {"id": 7, "cx": 73.9, "cy": 33.6, "cw": 6, "ch": 8, "title": "Autoritratto", "titleEn": "Self-portrait", "year": "2026", "technique": "Olio su lino", "size": "30×30 cm", "desc": "Ritratto in berretto verde su fondo ocra. Lo sguardo si sottrae, sospeso tra concentrazione e assenza.", "category": "ritratto"}, {"id": 8, "cx": 83.05, "cy": 29.71, "cw": 10, "ch": 14, "title": "Ritratto di Celeste De Santis", "titleEn": "Portrait of Celeste De Santis", "year": "2025", "technique": "Olio su tela", "size": "60×50 cm", "desc": "Ritratto maschile con sguardo diretto e composto. La luce modella il volto con discrezione e precisione.", "category": "ritratto"}, {"id": 9, "cx": 80.6, "cy": 46.8, "cw": 13, "ch": 15, "title": "Senza titolo", "titleEn": "Untitled", "year": "2024", "technique": "Olio su tela", "size": "70×60 cm", "desc": "Due scarpe consumate con un chiodo. Oggetti testimoni della quotidianità, disposti con la cura di una natura morta fiamminga.", "category": "natura morta"}, {"id": 10, "cx": 67.82, "cy": 45.69, "cw": 7, "ch": 10, "title": "Soylent night", "titleEn": "Soylent night", "year": "2024", "technique": "Olio su tela", "size": "50×50 cm", "desc": "Tetti romani di notte con torrette e comignoli su cielo blu scuro. Architettura popolare trasfigurata in paesaggio lunare.", "category": "paesaggio architettonico"}, {"id": 11, "cx": 57.7, "cy": 45.8, "cw": 10, "ch": 12, "title": "Non ancora", "titleEn": "Not yet", "year": "2024", "technique": "Olio su tela", "size": "50×50 cm", "desc": "Due scarpe consumate con un chiodo. Oggetti testimoni della quotidianità, disposti con la cura di una natura morta fiamminga.", "category": "natura morta"}, {"id": 12, "cx": 43.4, "cy": 45.3, "cw": 16, "ch": 20, "title": "Eremo", "titleEn": "Eremo", "year": "2024", "technique": "Olio su tela", "size": "80×80 cm", "desc": "Tavolo da lavoro dell'atelier visto dall'alto. Caos fertile di colori, tele, barattoli, un bicchiere di vino. La pittura come pratica e come vita.", "category": "natura morta"}];
+
+const bio = {
+  name: "Manuel Cilli",
+  born: "Pescara, Italia, 1993",
+  location: "Vive e lavora a Roma (Italia)",
+  statement: "Manuel Cilli cerca una pittura immobile e di atmosfera, che non aggiunge e non sottrae, ma isola e rappresenta. I soggetti seguono i generi pittorici della natura morta, del ritratto, del paesaggio architettonico e delle scene di vita quotidiana.",
+  education: [
+    { years: "2017–2020", title: "Diploma accademico di II livello in Arti Visive – Pittura", institution: "Accademia di Belle Arti di Venezia" },
+    { years: "2014–2017", title: "Diploma accademico di I livello in Arti Visive – Pittura", institution: "Accademia di Belle Arti di Urbino" }
+  ],
+  shows: [
+    { year: "2025", title: '"Gioco Piano"', venue: "Piazza Galeria 7, Roma" }
+  ],
+  contact: {
+    email: "manuel.cilli93@gmail.com",
+    phone: "+39 3341368654"
+  }
+};
+const IMG_NAT_W = 2048, IMG_NAT_H = 1536;
+
+// ─── GEOMETRIA IMMAGINE ───────────────────────────────────────────────
+// Calcola dove si trova l'immagine nel viewport (come object-fit:cover)
+// Restituisce {x, y, w, h} in pixel — origine viewport top-left
+function imgRect() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const imgRatio = IMG_NAT_W / IMG_NAT_H;
+  const vpRatio  = vw / vh;
+  let w, h, x, y;
+  if (vpRatio >= imgRatio) {
+    // viewport più largo → scala per larghezza
+    w = vw;
+    h = vw / imgRatio;
+    x = 0;
+    y = (vh - h) / 2;
+  } else {
+    // viewport più alto → scala per altezza
+    h = vh;
+    w = vh * imgRatio;
+    x = (vw - w) / 2;
+    y = 0;
+  }
+  return { x, y, w, h };
+}
+
+// Converte % immagine → px viewport
+function imgPctToPx(cx_pct, cy_pct) {
+  const r = imgRect();
+  return {
+    x: r.x + (cx_pct / 100) * r.w,
+    y: r.y + (cy_pct / 100) * r.h
+  };
+}
+
+// ─── POSIZIONA IMMAGINE ───────────────────────────────────────────────
+const wallImg = document.getElementById('wall-img');
+
+function layoutImg() {
+  const r = imgRect();
+  wallImg.style.left   = r.x + 'px';
+  wallImg.style.top    = r.y + 'px';
+  wallImg.style.width  = r.w + 'px';
+  wallImg.style.height = r.h + 'px';
+}
+layoutImg();
+window.addEventListener('resize', () => { layoutImg(); positionHotspots(); buildSteps(); });
+
+// ─── CURSOR ──────────────────────────────────────────────────────────
+const cur = document.getElementById('cur'), ring = document.getElementById('cur-ring');
+let mx = window.innerWidth/2, my = window.innerHeight/2, rx = mx, ry = my;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+(function loop() {
+  cur.style.left = mx+'px'; cur.style.top = my+'px';
+  rx += (mx-rx)*.1; ry += (my-ry)*.1;
+  ring.style.left = rx+'px'; ring.style.top = ry+'px';
+  requestAnimationFrame(loop);
+})();
+
+// ─── HOTSPOTS ────────────────────────────────────────────────────────
+const stage = document.getElementById('stage');
+const hsEls = [];
+
+paintings.forEach((p, i) => {
+  const d = document.createElement('div');
+  d.className = 'hs';
+  d.id = 'hs' + p.id;
+  d.innerHTML = `
+    <div class="hs-box"></div>
+    <div class="hs-c tl"></div><div class="hs-c tr"></div>
+    <div class="hs-c bl"></div><div class="hs-c br"></div>
+    <div class="hs-dot"></div>
+    <div class="hs-ring"></div>
+    <div class="hs-label">${p.title}</div>`;
+  d.onclick = () => openP(paintings[i]);
+  d.addEventListener('mouseenter', () => { cur.style.width='16px'; cur.style.height='16px'; ring.style.width='48px'; ring.style.height='48px'; });
+  d.addEventListener('mouseleave', () => { cur.style.width='6px'; cur.style.height='6px'; ring.style.width='30px'; ring.style.height='30px'; });
+  stage.appendChild(d);
+  hsEls.push(d);
+
+  // Dimensione hotspot in px (basata su cw/ch % dell'immagine)
+  const r = imgRect();
+  d.style.width  = (p.cw / 100 * r.w) + 'px';
+  d.style.height = (p.ch / 100 * r.h) + 'px';
+});
+
+function positionHotspots() {
+  const r = imgRect();
+  paintings.forEach((p, i) => {
+    const px = imgPctToPx(p.cx, p.cy);
+    hsEls[i].style.left   = px.x + 'px';
+    hsEls[i].style.top    = px.y + 'px';
+    hsEls[i].style.width  = (p.cw / 100 * r.w) + 'px';
+    hsEls[i].style.height = (p.ch / 100 * r.h) + 'px';
+  });
+}
+positionHotspots();
+
+// ─── PROGRESS DOTS ───────────────────────────────────────────────────
+const prog = document.getElementById('progress');
+for (let i = 0; i <= paintings.length; i++) {
+  const d = document.createElement('div');
+  d.className = 'pd'; d.id = 'pd'+i;
+  prog.appendChild(d);
+}
+
+// ─── SCROLL + ZOOM ───────────────────────────────────────────────────
+// Strategia: NON muoviamo l'img. Muoviamo lo stage con scale+translate
+// L'img è posizionata staticamente. Lo stage fa da camera.
+// transform-origin: center center dello stage (50vw, 50vh)
+
+const stageEl = document.getElementById('stage');
+const intro   = document.getElementById('intro');
+const zoomLabel = document.getElementById('zoom-label');
+
+// step 0 = overview, steps 1..N = zoom su quadro i
+// Per ogni quadro: vogliamo che imgPctToPx(cx,cy) vada a (vw/2, vh/2)
+// Con scale S applicato al centro del viewport:
+// tx = vw/2 - px.x  (in px, nel sistema pre-scale)
+// ty = vh/2 - px.y
+
+function ease(t) { return t < .5 ? 2*t*t : -1+(4-2*t)*t; }
+
+// Pre-calcola steps una volta sola — percorso deterministico
+let STEPS = [];
+function buildSteps() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const r = imgRect();
+  const isMob = vw <= 768 || ('ontouchstart' in window && vw < 1024);
+  const TARGET = isMob ? 0.50 : 0.72;
+  STEPS = [{ scale: 1, tx: 0, ty: 0, label: '' }];
+  paintings.forEach(p => {
+    const pw = p.cw / 100 * r.w;
+    const ph = p.ch / 100 * r.h;
+    const px = imgPctToPx(p.cx, p.cy);
+
+    // Se il quadro è fuori dalla stage visibile → rimane all'overview
+    const fullyOffscreen =
+      px.x + pw / 2 < 0 || px.x - pw / 2 > vw ||
+      px.y + ph / 2 < 0 || px.y - ph / 2 > vh;
+    if (fullyOffscreen) {
+      STEPS.push({ scale: 1, tx: 0, ty: 0, label: p.title });
+      return;
+    }
+
+    const scale = Math.max(Math.min(
+      (TARGET * vw) / pw,
+      (TARGET * vh) / ph,
+      5.0
+    ), 1.5);
+    const maxTx = (vw / 2) * (1 - 1 / scale);
+    const maxTy = (vh / 2) * (1 - 1 / scale);
+    STEPS.push({
+      scale,
+      tx: Math.max(-maxTx, Math.min(maxTx, vw / 2 - px.x)),
+      ty: Math.max(-maxTy, Math.min(maxTy, vh / 2 - px.y)),
+      label: p.title
+    });
+  });
+}
+buildSteps();
+
+function getStep(idx) {
+  return STEPS[Math.min(Math.max(idx,0), STEPS.length-1)];
+}
+
+const N = paintings.length; // numero quadri
+
+const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window && window.innerWidth < 1024);
+
+if (isMobile) {
+  // ─── MOBILE: full-screen card gallery per painting ──────────────────
+  const wallImg = document.getElementById('wall-img');
+  const mgEl    = document.getElementById('m-gallery');
+  const vw = window.innerWidth, vh = window.innerHeight;
+
+  function buildMobileGallery() {
+    const nw = wallImg.naturalWidth, nh = wallImg.naturalHeight;
+    if (!nw || !nh) { requestAnimationFrame(buildMobileGallery); return; }
+
+    const wallSrc = wallImg.src;
+    mgEl.innerHTML = '';
+
+    // intro card — wall image blurred as backdrop
+    const coverScale = Math.max(vw / nw, vh / nh);
+    const covW = (nw * coverScale).toFixed(0), covH = (nh * coverScale).toFixed(0);
+    const covX = ((vw - nw * coverScale) / 2).toFixed(0);
+    const covY = ((vh - nh * coverScale) / 2).toFixed(0);
+    const intro = document.createElement('div');
+    intro.className = 'm-intro-page';
+    intro.innerHTML = `
+      <div class="m-page-bg" style="background-image:url('${wallSrc}');background-size:${covW}px ${covH}px;background-position:${covX}px ${covY}px"></div>
+      <div class="m-page-vignette" style="background:linear-gradient(to top,rgba(8,6,4,.70) 0%,rgba(8,6,4,.15) 50%,transparent 100%)"></div>
+      <div class="m-intro-title">Atelier</div>
+      <div class="m-intro-hint"><span class="sl"></span>Scorri per esplorare</div>`;
+    mgEl.appendChild(intro);
+
+    // one card per painting
+    paintings.forEach((p, i) => {
+      const pw = p.cw / 100 * nw;
+      const ph = p.ch / 100 * nh;
+      const TARGET = 0.72;
+      const scale  = Math.min(TARGET * vw / pw, TARGET * vh / ph);
+      const bgW = (nw * scale).toFixed(0);
+      const bgH = (nh * scale).toFixed(0);
+      const bgX = (vw / 2 - p.cx / 100 * nw * scale).toFixed(0);
+      const bgY = (vh / 2 - p.cy / 100 * nh * scale).toFixed(0);
+
+      const page = document.createElement('div');
+      page.className = 'm-page';
+      page.innerHTML = `
+        <div class="m-page-bg" style="background-image:url('${wallSrc}');background-size:${bgW}px ${bgH}px;background-position:${bgX}px ${bgY}px"></div>
+        <div class="m-page-vignette"></div>
+        <div class="m-page-meta">
+          <div class="m-page-num">${String(p.id).padStart(2,'0')} — ${p.technique}</div>
+          <div class="m-page-title">${p.title}</div>
+          <div class="m-page-sub">Manuel Cilli &nbsp;·&nbsp; ${p.year}</div>
+        </div>
+        <div class="m-page-cta">Scopri →</div>`;
+      page.addEventListener('click', () => openP(paintings[i]));
+      mgEl.appendChild(page);
+    });
+  }
+
+  if (wallImg.complete && wallImg.naturalWidth) {
+    buildMobileGallery();
+  } else {
+    wallImg.addEventListener('load', buildMobileGallery, { once: true });
+  }
+
+} else {
+  // ─── DESKTOP: GSAP ScrollTrigger ───────────────────────────────────
+  ScrollTrigger.create({
+    trigger: '#gallery-scroll',
+    start: 'top top',
+    end: 'bottom bottom',
+    scrub: 1.2,
+    onUpdate(self) {
+      const p   = self.progress;
+      const raw = p * N; // 0..N
+      const idx = Math.min(Math.floor(raw), N - 1);
+      const frac = raw - idx;
+
+      const from = getStep(idx);
+      const to   = getStep(Math.min(idx + 1, N));
+      const ef   = ease(frac);
+
+      const sc = from.scale + (to.scale - from.scale) * ef;
+      const tx = from.tx    + (to.tx    - from.tx)    * ef;
+      const ty = from.ty    + (to.ty    - from.ty)    * ef;
+
+      stageEl.style.transformOrigin = '50% 50%';
+      stageEl.style.transform = `scale(${sc}) translate(${tx}px, ${ty}px)`;
+
+      intro.style.opacity = Math.max(0, 1 - p * (N * 2));
+
+      const nr = Math.round(raw);
+      if (nr > 0 && nr <= N && Math.abs(raw - nr) < 0.1) {
+        zoomLabel.textContent = paintings[nr-1].title;
+        zoomLabel.style.opacity = '1';
+      } else {
+        zoomLabel.style.opacity = '0';
+      }
+
+      const isZoomed = sc > 1.5;
+      hsEls.forEach((el, i) => {
+        if (!isZoomed) {
+          el.style.opacity = '0.3';
+          el.classList.remove('on');
+        } else {
+          const isCurrent = (i === Math.round(raw) - 1) && Math.abs(raw - Math.round(raw)) < 0.2;
+          el.style.opacity = isCurrent ? '1' : '0';
+          el.classList.toggle('on', isCurrent);
+        }
+      });
+
+      document.querySelectorAll('.pd').forEach((d, i) => {
+        d.classList.toggle('on', i === Math.round(raw));
+      });
+    }
+  });
+}
+
+// ─── POPUP ────────────────────────────────────────────────────────────
+const ov = document.getElementById('popup-ov');
+
+const photos = {
+  1:'FOTO FINALI/Senza titolo (miraggio=.webp',
+  2:'FOTO FINALI/Limbo.webp',
+  3:'FOTO FINALI/Senza titolo .webp',
+  4:'FOTO FINALI/Il guardiano.webp',
+  5:'FOTO FINALI/Codice S.webp',
+  6:'FOTO FINALI/Il Mito.webp',
+  7:'FOTO FINALI/Autoritratto.webp',
+  8:'FOTO FINALI/Ritratto di Celeste De Santis.webp',
+  9:'FOTO FINALI/Senza titolo olio.webp',
+  10:'FOTO FINALI/Soylent Night.webp',
+  11:'FOTO FINALI/Non Ancora.webp',
+  12:'FOTO FINALI/eremo.webp',
+};
+
+function openP(p) {
+  document.getElementById('p-num').textContent    = String(p.id).padStart(2,'0') + ' / ' + p.technique;
+  document.getElementById('p-title').textContent  = p.title;
+  document.getElementById('p-artist').textContent = 'Manuel Cilli — ' + p.year;
+  document.getElementById('p-desc').textContent   = p.desc;
+  document.getElementById('p-specs').innerHTML = `
+    <div class="p-spec"><label>Dimensioni</label><span>${p.size}</span></div>
+    <div class="p-spec"><label>Tecnica</label><span>${p.technique}</span></div>
+    ${p.price ? `<div class="p-price p-spec"><label>Prezzo</label><span>${p.price}</span></div>` : ''}`;
+  document.getElementById('popup-img-bg').src = photos[p.id] || '';
+  ov.classList.add('open');
+}
+
+function closeP(e) {
+  if (e === null || e.target === ov) ov.classList.remove('open');
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    ov.classList.remove('open');
+    document.getElementById('bio-ov').classList.remove('open');
+  }
+});
+
+const bioOv = document.getElementById('bio-ov');
+
+function openBio() {
+  bioOv.classList.add('open');
+}
+
+function closeBio(e) {
+  if (e === null || e.target === bioOv) bioOv.classList.remove('open');
+}
+
+</script>
+</body>
+</html>
